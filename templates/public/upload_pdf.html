@@ -17,6 +17,19 @@
     #submitProcessPdf {
       display:none;
     }
+
+    .icon-file-pdf-o {
+      fill:#FF0004;
+    }
+
+    .icon-angle-right,
+    .icon-angle-left,
+    .icon-angle-up,
+    .icon-angle-down {
+      height: 24px;
+      padding-top: 2px;
+      padding-bottom: 2px;
+    }
   </style>
   </head>
   <body>
@@ -44,6 +57,15 @@
       <script type="text/javascript" src="static/js/svgxuse.js" defer></script>   
       <script>
         $(document).ready(function(e) {
+          function truncateFilename(filename) {
+            let threshold=30;
+            let result=filename;
+            if(filename.length>threshold) {
+              result=filename.substring(0,threshold+1-3)+"...";
+            }
+            return result;
+          }
+
           var JSONMsg=window.location.hash.replace("#","");
           JSONMsg=decodeURI(JSONMsg);
           JSONMsg=JSON.parse(JSONMsg);
@@ -59,8 +81,9 @@
             JSONOutputHtmlStr+="<div class='col-sm-3' id='" + j + "'>";
             JSONOutputHtmlStr+="<table style='font-size:small'>";
 
+
             JSONOutputHtmlStr+="<tr>";
-            JSONOutputHtmlStr+="<th colspan='2'>"+jsonObj["filename"]+"</th>";
+            JSONOutputHtmlStr+="<th colspan='2' id='" + jsonObj["filename"] + "'>"+truncateFilename(jsonObj["filename"])+"</th>";
             JSONOutputHtmlStr+="</tr>";
 
             JSONOutputHtmlStr+="<tr>";
@@ -68,12 +91,12 @@
             JSONOutputHtmlStr+="</tr>";
 
             JSONOutputHtmlStr+="<tr>";
-            JSONOutputHtmlStr+="<th>From</th>";
+            JSONOutputHtmlStr+="<th>From Page:</th>";
             JSONOutputHtmlStr+="<td><input type='number' class='form-control form-control-sm rounded-0' min='1' max='" + jsonObj["totalNoOfPages"] + "' value='1' /></td>";
             JSONOutputHtmlStr+="</tr>";
 
             JSONOutputHtmlStr+="<tr>";
-            JSONOutputHtmlStr+="<th>To</th>";
+            JSONOutputHtmlStr+="<th>To Page:</th>";
             JSONOutputHtmlStr+="<td><input type='number' class='form-control form-control-sm rounded-0' min='1' max='" + jsonObj["totalNoOfPages"] + "' value='" + jsonObj["totalNoOfPages"] + "' /></td>";
             JSONOutputHtmlStr+="</tr>";
 
@@ -83,16 +106,18 @@
             JSONOutputHtmlStr+="<label class='form-check-label'><input type='radio' class='form-check-input' name='rotate" + j + "' value='' checked='checked' />None</label>";
             JSONOutputHtmlStr+="</div>";
             JSONOutputHtmlStr+="<div class='form-check'>";
-            JSONOutputHtmlStr+="<label class='form-check-label'><input type='radio' class='form-check-input' name='rotate" + j + "' value='>'  />Clockwise right 90°</label>";
+            JSONOutputHtmlStr+="<label class='form-check-label'><input type='radio' class='form-check-input' name='rotate" + j + "' value='>'  />Clockwise right 90° <svg class='icon icon-angle-right'><use xlink:href='static/js/symbol-defs.svg#icon-angle-right'></use></svg></label>";
             JSONOutputHtmlStr+="</div>";
             JSONOutputHtmlStr+="<div class='form-check'>";
-            JSONOutputHtmlStr+="<label class='form-check-label'><input type='radio' class='form-check-input' name='rotate" + j + "' value='V'  />Inverse downwards 180°</label>";
+            JSONOutputHtmlStr+="<label class='form-check-label'><input type='radio' class='form-check-input' name='rotate" + j + "' value='V'  />Inverse downwards 180° <svg class='icon icon-angle-down'><use xlink:href='static/js/symbol-defs.svg#icon-angle-down'></use></svg></label>";
             JSONOutputHtmlStr+="</div>";
             JSONOutputHtmlStr+="<div class='form-check'>";
-            JSONOutputHtmlStr+="<label class='form-check-label'><input type='radio' class='form-check-input' name='rotate" + j + "' value='<'  />Clockwise downwards 270°</label>";
+            JSONOutputHtmlStr+="<label class='form-check-label'><input type='radio' class='form-check-input' name='rotate" + j + "' value='<'  />Clockwise downwards 270° <svg class='icon icon-angle-left'><use xlink:href='static/js/symbol-defs.svg#icon-angle-left'></use></svg></label>";
             JSONOutputHtmlStr+="</div>";
             JSONOutputHtmlStr+="</td>";
             JSONOutputHtmlStr+="</tr>";
+
+
             JSONOutputHtmlStr+="</table>";
 
             JSONOutputHtmlStr+="<input type='hidden' name='totalNoOfPages' value='"+jsonObj["totalNoOfPages"]+"' />";
@@ -115,7 +140,7 @@
             var indices=JSONMsg.length;
             for(var index=0;index<indices;index++) {
               var entry=document.getElementById(index);
-              var filename=entry.getElementsByTagName("th")[0].innerText;
+              var filename=entry.getElementsByTagName("th")[0].id;
               var startPage=entry.getElementsByTagName("input")[0].value;
               var endPage=entry.getElementsByTagName("input")[1].value;
 
