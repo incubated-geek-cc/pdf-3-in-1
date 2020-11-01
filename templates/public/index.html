@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Upload PDF</title>
+	<link rel="icon" href="static/favicon32x32.png">
+	<meta name="theme-color" content="#ffffff">
+	<style>
+		.icon {
+		  display: inline-block;
+		  width: 1em;
+		  height: 1em;
+		  stroke-width: 0;
+		  stroke: currentColor;
+		  fill: currentColor;
+		}
+	</style>
+	</head>
+	<body>
+      	<div class="container">
+	        <div class="row">
+	          <div class="col">
+	              <h1>Upload PDF</h1><hr>
+	              <form action="/upload-pdf" method="POST" enctype="multipart/form-data">
+	                <div class="form-group">
+	                  <input type="file" class="form-control-file border" name="pdf" id="pdf" />
+	                </div>
+	                <button type="submit" class="btn btn-info rounded-0 float-right">
+	                	Upload <svg class='icon icon-upload'><use xlink:href='static/js/symbol-defs.svg#icon-upload'></use></svg>
+	                </button>
+	              </form>
+	          </div>
+	        </div>
+	        <hr>
+	        <div id="JSONOutput"></div>
+      	</div>
+	    <link rel="stylesheet" href="static/css/bootstrap-4.5.2.min.css" />
+	    <script type="text/javascript" src="static/js/jquery-2.1.0.min.js"></script>
+	    <script type="text/javascript" src="static/js/popper-1.16.0.min.js"></script>
+	    <script type="text/javascript" src="static/js/bootstrap-4.5.2.min.js"></script>
+	    <script type="text/javascript" src="static/js/svgxuse.js" defer></script>	   
+	</body>
+</html>

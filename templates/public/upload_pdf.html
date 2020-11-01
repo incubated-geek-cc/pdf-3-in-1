@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Upload PDF</title>
+    <link rel="icon" href="static/favicon32x32.png">
+    <meta name="theme-color" content="#ffffff">
+    <style>
+    .icon {
+      display: inline-block;
+      width: 1em;
+      height: 1em;
+      stroke-width: 0;
+      stroke: currentColor;
+      fill: currentColor;
+    }
+
+    #submitProcessPdf {
+      display:none;
+    }
+  </style>
+  </head>
+  <body>
+      <div class="container">
+        <div class="row">
+          <div class="col">
+              <h1>Upload PDF</h1><hr>
+              <form action="/upload-pdf" method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                  <input type="file" class="form-control-file border" name="pdf" id="pdf" />
+                </div>
+                <button type="submit" class="btn btn-info rounded-0 float-right">
+                  Upload <svg class="icon icon-upload"><use xlink:href="static/js/symbol-defs.svg#icon-upload"></use></svg>
+                </button>
+              </form>
+          </div>
+        </div>
+        <hr>
+        <div id="JSONOutput"></div>
+      </div>
+      <link rel="stylesheet" href="static/css/bootstrap-4.5.2.min.css" />
+      <script type="text/javascript" src="static/js/jquery-2.1.0.min.js"></script>
+      <script type="text/javascript" src="static/js/popper-1.16.0.min.js"></script>
+      <script type="text/javascript" src="static/js/bootstrap-4.5.2.min.js"></script>
+      <script type="text/javascript" src="static/js/svgxuse.js" defer></script>   
+      <script>
+        $(document).ready(function(e) {
+          var JSONMsg=window.location.hash.replace("#","");
+          JSONMsg=decodeURI(JSONMsg);
+          JSONMsg=JSON.parse(JSONMsg);
+         
+          $("#JSONOutput").html("");
+
+          var JSONOutputHtmlStr="";
+          JSONOutputHtmlStr+="<form action='/process-pdf' method='POST' class='row'>";
+
+          for(var j in JSONMsg) {
+            var jsonObj=JSONMsg[j];
+            
+            JSONOutputHtmlStr+="<div class='col-sm-3' id='" + j + "'>";
+            JSONOutputHtmlStr+="<table style='font-size:small'>";
+
+            JSONOutputHtmlStr+="<tr>";
+            JSONOutputHtmlStr+="<th colspan='2'>"+jsonObj["filename"]+"</th>";
+            JSONOutputHtmlStr+="</tr>";
+
+            JSONOutputHtmlStr+="<tr>";
+            JSONOutputHtmlStr+="<th colspan='2' style='text-align:center'><svg class='icon icon-file-pdf-o' style='width:50px;height: 50px;'><use xlink:href='static/js/symbol-defs.svg#icon-file-pdf-o'></use></svg></th>";
+            JSONOutputHtmlStr+="</tr>";
+
+            JSONOutputHtmlStr+="<tr>";
+            JSONOutputHtmlStr+="<th>From</th>";
+            JSONOutputHtmlStr+="<td><input type='number' class='form-control form-control-sm rounded-0' min='1' max='" + jsonObj["totalNoOfPages"] + "' value='1' /></td>";
+            JSONOutputHtmlStr+="</tr>";
+
+            JSONOutputHtmlStr+="<tr>";
+            JSONOutputHtmlStr+="<th>To</th>";
+            JSONOutputHtmlStr+="<td><input type='number' class='form-control form-control-sm rounded-0' min='1' max='" + jsonObj["totalNoOfPages"] + "' value='" + jsonObj["totalNoOfPages"] + "' /></td>";
+            JSONOutputHtmlStr+="</tr>";
+
+            JSONOutputHtmlStr+="<tr>";
+            JSONOutputHtmlStr+="<td colspan='2'>";
+            JSONOutputHtmlStr+="<div class='form-check'>";
+            JSONOutputHtmlStr+="<label class='form-check-label'><input type='radio' class='form-check-input' name='rotate" + j + "' value='' checked='checked' />None</label>";
+            JSONOutputHtmlStr+="</div>";
+            JSONOutputHtmlStr+="<div class='form-check'>";
+            JSONOutputHtmlStr+="<label class='form-check-label'><input type='radio' class='form-check-input' name='rotate" + j + "' value='>'  />Clockwise right 90°</label>";
+            JSONOutputHtmlStr+="</div>";
+            JSONOutputHtmlStr+="<div class='form-check'>";
+            JSONOutputHtmlStr+="<label class='form-check-label'><input type='radio' class='form-check-input' name='rotate" + j + "' value='V'  />Inverse downwards 180°</label>";
+            JSONOutputHtmlStr+="</div>";
+            JSONOutputHtmlStr+="<div class='form-check'>";
+            JSONOutputHtmlStr+="<label class='form-check-label'><input type='radio' class='form-check-input' name='rotate" + j + "' value='<'  />Clockwise downwards 270°</label>";
+            JSONOutputHtmlStr+="</div>";
+            JSONOutputHtmlStr+="</td>";
+            JSONOutputHtmlStr+="</tr>";
+            JSONOutputHtmlStr+="</table>";
+
+            JSONOutputHtmlStr+="<input type='hidden' name='totalNoOfPages' value='"+jsonObj["totalNoOfPages"]+"' />";
+            JSONOutputHtmlStr+="<input type='hidden' name='filepath' value='"+jsonObj["filepath"]+"' />";
+
+            JSONOutputHtmlStr+="</div>";
+          }
+          JSONOutputHtmlStr+="<input type='hidden' id='pdf_files' name='pdf_files' value='' />";
+          JSONOutputHtmlStr+="<input id='submitProcessPdf' type='submit' />";
+          JSONOutputHtmlStr+="</form>";
+          JSONOutputHtmlStr+="<button id='process' type='button' class='btn btn-secondary rounded-0 float-right'>";
+          JSONOutputHtmlStr+="Process ";
+          JSONOutputHtmlStr+="<svg class='icon icon-cloud-upload'><use xlink:href='static/js/symbol-defs.svg#icon-cloud-upload'></use></svg>";
+          JSONOutputHtmlStr+="</button>";
+
+          $("#JSONOutput").html(JSONOutputHtmlStr);
+          
+          $("#process").click(function(e) {
+            var resultArr=[];
+            var indices=JSONMsg.length;
+            for(var index=0;index<indices;index++) {
+              var entry=document.getElementById(index);
+              var filename=entry.getElementsByTagName("th")[0].innerText;
+              var startPage=entry.getElementsByTagName("input")[0].value;
+              var endPage=entry.getElementsByTagName("input")[1].value;
+
+              var rotation="";
+              var filepath="";
+              var totalNoOfPages=0;
+
+              var inputs=entry.getElementsByTagName("input");
+
+              for(var i in inputs) {
+                  var input=inputs[i];
+                  if(typeof input.name !== "undefined") {
+                    if(input.name.indexOf("rotate") !== -1) {
+                        if(input.checked) {
+                            rotation=input.value;
+                        }
+                    } else if(input.name=="filepath") {
+                      filepath=input.value;
+                    } else if(input.name=="totalNoOfPages") {
+                      totalNoOfPages=input.value;
+                    }
+                  }
+              }
+
+              var resultObj={
+                "filename": filename,
+                "startPage": startPage,
+                "endPage": endPage,
+                "rotation": rotation,
+                "filepath": filepath,
+                "totalNoOfPages": totalNoOfPages
+              };
+              resultArr.push(resultObj);
+            }
+
+            $("#pdf_files").val(JSON.stringify(resultArr));
+            $("#submitProcessPdf").click();
+          });
+
+        });
+
+      </script> 
+  </body>
+</html>
